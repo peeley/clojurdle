@@ -5,7 +5,7 @@
 
 (def word-list ["alert" "loves" "cakes"])
 (def target-word (first word-list))
-(def keyboard-keys [["q" "w" "e" "r" "t" "y" "u" "i" "o" "p"]
+(def keyboard-rows [["q" "w" "e" "r" "t" "y" "u" "i" "o" "p"]
                     ["a" "s" "d" "f" "g" "h" "j" "k" "l"]
                     [:enter "z" "x" "c" "v" "b" "n" "m" :backspace]])
 
@@ -32,40 +32,65 @@
       (not (nil? idx-in-target)) "bg-yellow-500"
       :else "bg-stone-600")))
 
+
+(defn try-new-word
+  []
+  (swap! tries #(conj % @current-try)
+  (reset! current-try "")))
+
+(defn add-letter-to-try
+  [letter]
+  (when (< (count @current-try) 5)
+    (swap! current-try #(str % letter))))
+
+(defn backspace
+  []
+  (swap! current-try #(->> % drop-last (apply str))))
+
+(defn render-key
+  [key]
+  [:button {:class "mx-3"
+            :on-click (case key
+                        :backspace #(backspace)
+                        :enter try-new-word
+                        #(add-letter-to-try key))}
+   (case key
+     :backspace "DELETE"
+     :enter "ENTER"
+     (str/upper-case key))])
+
 (defn render-tried-letter
   [idx letter]
-  [:td>span {:key idx
-             :class (str "text-white " (get-letter-color idx letter))}
+  [:span.text-6xl.text-white {:key idx
+                              :class (get-letter-color idx letter)}
    letter])
 
 (defn render-try
   [tried-word]
   (let [letters (into [] tried-word)]
-    [:tr (map-indexed render-tried-letter letters)]))
+    (map-indexed render-tried-letter letters)))
 
-(defn try-new-word
-  [word]
-  (reset! current-try "")
-  (swap! tries #(conj %1 word)))
+(defn render-keyboard-row
+  [row]
+  [:div {:class "flex flex-row my-3 place-content-center"}
+           (map render-key row)])
 
-(defn update-try
-  [value]
-  (when (< (count value) 6)
-    (reset! current-try value)))
+(defn render-keyboard
+  []
+  [:div {:class "flex flex-col"}
+   (map render-keyboard-row keyboard-rows)])
 
 (defn component
   []
-  [:div [:table.table-auto>tbody (map render-try @tries)]
+  [:div {:class "w-1/2 m-auto h-screen flex flex-col justify-around"}
+   [:div {:class "aspect-5/6 grid gap-4 grid-cols-5 grid-rows-6 place-content-center"}
+    (mapcat render-try (conj @tries @current-try))]
    (if (not (game-over?))
-     [:div
-      [:input {:type "text"
-               :value @current-try
-               :on-change #(update-try (-> % .-target .-value))}]
-      [:button {:on-click #(try-new-word @current-try)
-                :disabled (not= 5 (count @current-try))} "enter"]]
+     [:div {:class "flex justify-center"}
+      (render-keyboard)]
      [:div
       (if (player-won?) [:p "Congrats!"]
-                        [:p (str "The word of the day is `" target-word "`.")])])])
+          [:p (str "The word of the day is `" target-word "`.")])])])
 
 (defn main
   []

@@ -35,8 +35,9 @@
 
 (defn try-new-word
   []
-  (swap! tries #(conj % @current-try)
-  (reset! current-try "")))
+  (let [current-try-val @current-try]
+    (swap! tries #(conj % current-try-val))
+    (reset! current-try "")))
 
 (defn add-letter-to-try
   [letter]

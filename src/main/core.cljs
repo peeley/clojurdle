@@ -16,7 +16,7 @@
 (def green "bg-lime-600")
 (def yellow "bg-yellow-500")
 (def grey "bg-stone-600")
-(def black "bg-black")
+(def black "bg-stone-900")
 
 (defonce current-try (r/atom ""))
 
@@ -70,7 +70,7 @@
 
 (defn render-key
   [key]
-  [:button {:class (str "mx-3 " (get @tried-letters key))
+  [:button {:class (str "p-3 mx-3 border " (get @tried-letters key))
             :on-click (case key
                         :backspace #(backspace)
                         :enter try-new-word
@@ -81,15 +81,20 @@
      (str/upper-case key))])
 
 (defn render-tried-letter
-  [idx letter]
-  [:span.text-6xl.text-white {:key (str idx letter)
-                              :class (get-letter-color idx letter)}
+  [idx letter color]
+  [:span.text-6xl.text-white.border {:key (str idx letter) :class color}
    letter])
 
 (defn render-try
   [tried-word]
   (let [letters (into [] tried-word)]
-    (map-indexed render-tried-letter letters)))
+    (map-indexed #(render-tried-letter %1 %2 (get-letter-color %1 %2)) letters)))
+
+(defn render-remaining-tries
+  []
+  (let [remaining-tries (- 5 (count @tries))
+        remaining-letters (+ (- 5 (count @current-try)) (* 5 remaining-tries))]
+    (repeat remaining-letters [:span.border {:class black}])))
 
 (defn render-keyboard-row
   [row]
@@ -103,13 +108,11 @@
 
 (defn component
   []
-  [:div {:class "w-1/2 m-auto h-screen flex flex-col justify-around"}
-   [:div {:class "aspect-5/6 grid gap-4 grid-cols-5 grid-rows-6 place-content-center"}
+  [:div {:class "w-full m-auto h-screen flex flex-col justify-around items-center bg-stone-900"}
+   [:div {:class "w-1/2 grid gap-4 grid-cols-5 grid-rows-6 place-content-center"}
     (mapcat render-try @tries)
-    ;; TODO this is ugly, deduplicate w/ `render-try` somehow
-    (->> @current-try (map-indexed #(vector :span.text-6xl.text-white {:key (str %1 %2)
-                                                                       :class black}
-                                            %2)))]
+    (->> @current-try (map-indexed #(render-tried-letter %1 %2 black)))
+    (render-remaining-tries)]
    (if (not (game-over?))
      [:div {:class "flex justify-center"}
       (render-keyboard)]
@@ -122,4 +125,5 @@
   (dom/render [component] (.getElementById js/document "clojurdle-root")))
 
 (comment
+  (when (not-empty @current-try) 1)
   )

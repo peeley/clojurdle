@@ -1,13 +1,10 @@
 (ns main.core
-  (:require [reagent.core :as r]
+  (:require [main.wordlist :refer [daily-word-list]]
+            [reagent.core :as r]
             [reagent.dom :as dom]
             [clojure.string :as str]))
 
-; TODO grab all five-letter words, maybe straight from wordle?
-(def word-list ["alert" "loves" "cakes"])
-
- ; TODO choose word based on day
-(def target-word (first word-list))
+(def target-word (first daily-word-list))
 
 (def keyboard-rows [["q" "w" "e" "r" "t" "y" "u" "i" "o" "p"]
                     ["a" "s" "d" "f" "g" "h" "j" "k" "l"]
@@ -20,7 +17,7 @@
 
 (defonce current-try (r/atom ""))
 
-(defonce tries (r/atom ["arbys" "farts"]))
+(defonce tries (r/atom []))
 
 (defonce tried-letters (r/atom (->> keyboard-rows
                                     flatten
@@ -82,8 +79,9 @@
 
 (defn render-tried-letter
   [idx letter color]
-  [:span.text-6xl.text-white.border {:key (str idx letter) :class color}
-   letter])
+  [:span.text-4xl.text-white.border.w-20.aspect-square.text-center.align-middle.leading-loose
+   {:key (str idx letter) :class color}
+   (str/upper-case letter)])
 
 (defn render-try
   [tried-word]
@@ -94,7 +92,7 @@
   []
   (let [remaining-tries (- 5 (count @tries))
         remaining-letters (+ (- 5 (count @current-try)) (* 5 remaining-tries))]
-    (repeat remaining-letters [:span.border {:class black}])))
+    (repeat remaining-letters [:span.border.w-20.aspect-square {:class black}])))
 
 (defn render-keyboard-row
   [row]
@@ -109,7 +107,7 @@
 (defn component
   []
   [:div {:class "w-full m-auto h-screen flex flex-col justify-around items-center bg-stone-900"}
-   [:div {:class "w-1/2 grid gap-4 grid-cols-5 grid-rows-6 place-content-center"}
+   [:div {:class "w-100 grid font-bold gap-2 grid-cols-5 grid-rows-6 place-content-center"}
     (mapcat render-try @tries)
     (->> @current-try (map-indexed #(render-tried-letter %1 %2 black)))
     (render-remaining-tries)]
@@ -125,5 +123,5 @@
   (dom/render [component] (.getElementById js/document "clojurdle-root")))
 
 (comment
-  (when (not-empty @current-try) 1)
+  (reset! tries ["farts"])
   )

@@ -67,7 +67,7 @@
 
 (defn render-key
   [key]
-  [:button {:class (str "p-3 mx-3 border " (get @tried-letters key))
+  [:button {:class (str "py-4 px-2.5 md:px-3 mx-0.5 border " (get @tried-letters key))
             :on-click (case key
                         :backspace #(backspace)
                         :enter try-new-word
@@ -79,7 +79,7 @@
 
 (defn render-tried-letter
   [idx letter color]
-  [:span.text-4xl.text-white.border.w-20.aspect-square.text-center.align-middle.leading-loose
+  [:p.text-3xl.md:text-4xl.border.w-16.md:w-20.aspect-square.inline-flex.justify-center.items-center
    {:key (str idx letter) :class color}
    (str/upper-case letter)])
 
@@ -92,21 +92,21 @@
   []
   (let [remaining-tries (- 5 (count @tries))
         remaining-letters (+ (- 5 (count @current-try)) (* 5 remaining-tries))]
-    (repeat remaining-letters [:span.border.w-20.aspect-square {:class black}])))
+    (repeat remaining-letters [:span.border.w-16.md:w-20.aspect-square {:class black}])))
 
 (defn render-keyboard-row
   [row]
-  [:div {:class "flex flex-row my-3 place-content-center"}
+  [:div {:class "flex flex-row my-1 place-content-center"}
    (map render-key row)])
 
 (defn render-keyboard
   []
-  [:div {:class "flex flex-col"}
+  [:div {:class "flex flex-col text-sm"}
    (map render-keyboard-row keyboard-rows)])
 
 (defn component
   []
-  [:div {:class "w-full m-auto h-screen flex flex-col justify-around items-center bg-stone-900"}
+  [:div {:class "w-full m-auto h-screen flex flex-col justify-around items-center bg-stone-900 text-white"}
    [:div {:class "w-100 grid font-bold gap-2 grid-cols-5 grid-rows-6 place-content-center"}
     (mapcat render-try @tries)
     (->> @current-try (map-indexed #(render-tried-letter %1 %2 black)))

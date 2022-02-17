@@ -41,11 +41,10 @@
 
 (defn get-letter-color
   [idx-in-current-word letter]
-  (let [idx-in-target (str/index-of target-word letter)]
-    (cond
-      (= idx-in-current-word idx-in-target) green
-      (not (nil? idx-in-target)) yellow
-      :else grey)))
+  (cond
+    (= letter (nth target-word idx-in-current-word)) green
+    (contains? target-word letter) yellow
+    :else grey))
 
 (defn try-new-word
   []
@@ -127,5 +126,4 @@
   (dom/render [component] (.getElementById js/document "clojurdle-root")))
 
 (comment
-  (reset! tries ["farts"])
   )

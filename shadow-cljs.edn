@@ -3,7 +3,8 @@
  ["src"]
 
  :dependencies
- [[reagent "1.1.0"]]
+ [[reagent "1.1.0"]
+  [com.andrewmcveigh/cljs-time "0.5.2"]]
 
  :dev-http {8080 "public"}
 

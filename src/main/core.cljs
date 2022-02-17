@@ -2,9 +2,11 @@
   (:require [main.wordlist :refer [daily-word-list]]
             [reagent.core :as r]
             [reagent.dom :as dom]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [cljs-time.core :as time]))
 
-(def target-word (first daily-word-list))
+(def days-since-start (time/in-days (time/interval (time/date-time 2022 1 1) (time/today))))
+(def target-word (nth daily-word-list days-since-start))
 
 (def keyboard-rows [["q" "w" "e" "r" "t" "y" "u" "i" "o" "p"]
                     ["a" "s" "d" "f" "g" "h" "j" "k" "l"]
@@ -52,9 +54,11 @@
         new-letters (mapcat #(hash-map %1 %2) current-try-val new-letter-colors)
         ; if a player got a green letter previously, don't overwrite it
         new-letters (remove #(= green (get @tried-letters (first %))) new-letters)]
-    (swap! tries #(conj % current-try-val))
-    (reset! current-try "")
-    (swap! tried-letters #(merge % new-letters))))
+    (when (= 5 (count @current-try))
+      (do
+        (swap! tries #(conj % current-try-val))
+        (reset! current-try "")
+        (swap! tried-letters #(merge % new-letters))))))
 
 (defn add-letter-to-try
   [letter]
